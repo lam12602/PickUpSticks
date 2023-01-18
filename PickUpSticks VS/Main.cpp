@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include<SFML/Audio.hpp>
 #include <iostream>
 #include <vector>
 #include <time.h>
@@ -68,7 +69,7 @@ int main()
     StickSprites.push_back(StickSprite);
     
     
-    playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
+    playerSprite.setPosition(sf::Vector2f(100.0f, 100.0f));
     playerSprite.setColor(sf::Color::Cyan);
     //playerSprite.setRotation(90);
     //playerSprite.setScale(3.0f, 3.0f);
@@ -83,6 +84,9 @@ int main()
     sf::Text gameTitle;
     gameTitle.setFont(gameFont);
     gameTitle.setString("Pick up Sticks");
+    gameTitle.setFillColor(sf::Color::Magenta);
+    gameTitle.setOutlineThickness(2.0f);
+    gameTitle.setOutlineColor(sf::Color::Black);
     float textwidth = gameTitle.getLocalBounds().width;
     gameTitle.setPosition(window.getSize().x / 2.0f - textwidth / 2.0f, 10);
 
@@ -90,7 +94,20 @@ int main()
     scoreLabel.setFont(gameFont);
     scoreLabel.setString("0000");
     float scorewidth = scoreLabel.getLocalBounds().width;
-    scoreLabel.setPosition();
+    //scoreLabel.setPosition(sf::Vector2f());
+
+    sf::SoundBuffer startSFXBuffer;
+    startSFXBuffer.loadFromFile("Assets/Start.wav");
+
+    sf::Sound startSFX;
+    startSFX.setBuffer(startSFXBuffer);
+    startSFX.play();
+
+    sf::Music gameMusic;
+    gameMusic.openFromFile("Assets/Music.ogg");
+    gameMusic.setLoop(true);
+    gameMusic.play();
+
 
 
 #pragma endregion
