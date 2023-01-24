@@ -4,6 +4,7 @@
 #include <vector>
 #include <time.h>
 #include <stdlib.h>
+#include<cmath>
 
 
 int main()
@@ -107,7 +108,11 @@ int main()
     gameMusic.openFromFile("Assets/Music.ogg");
     gameMusic.setLoop(true);
     gameMusic.play();
+    float xDr = 10 - rand() % 21/10.0f;
+    float yDr = 10 - rand() % 20/10.0f;
 
+    sf::Vector2f direction(xDr, yDr);
+    bool previousDash = false;
 
 
 #pragma endregion
@@ -135,8 +140,72 @@ int main()
         }
 #pragma endregion
 
-    
+#pragma region update
 
+        direction.x = 0;
+        direction.y = 0;
+        if (sf::Joystick::isConnected(1))
+        {
+            float axisX = sf::Joystick::getAxisPosition(1, sf::Joystick::X);
+            float axisY = sf::Joystick::getAxisPosition(1, sf::Joystick::Y);
+            
+            float deadzone = 25;
+            if (abs(axisX) > deadzone)
+                direction.x = axisX / 100.0f;
+            if (abs(axisY) > deadzone)
+                direction.y = axisY / 100.0f;
+
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        {
+            direction.x = -1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        {
+            direction.x = 1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        {
+            direction.y = -1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        {
+            direction.y = 1;
+        }
+
+        
+
+        
+
+        sf::Vector2f newPosition = playerSprite.getPosition() + direction*0.1f;
+        playerSprite.setPosition(newPosition);
+
+        bool dashPress = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) ||sf::Joystick::isButtonPressed(1,0);
+
+        if (dashPress && !previousDash)
+        {
+            sf::Vector2f dashPosition = playerSprite.getPosition() + direction * 150.0f;
+            playerSprite.setPosition(dashPosition);
+        }
+
+        previousDash = dashPress;
+        
+        //soawn stick(debug)
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+        {
+            sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+            sf::Vector2f mousepositionFloat = (sf::Vector2f)localPosition;
+            StickSprite.setPosition(mousepositionFloat);
+            int stickrotation = 0 + rand() % 360;
+            StickSprite.setRotation(stickrotation);
+            StickSprites.push_back(StickSprite);
+
+        }
+
+
+    
+#pragma endregion
 
 #pragma region Draw
         window.clear(sf::Color(61, 204, 90));
