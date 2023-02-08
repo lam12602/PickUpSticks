@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include<cmath>
 
-enum GameState
+enum class GameState
 {
     RUNNING,
-    GAME_OVER
+    GAME_OVER,
+    NUM_GAME_STATES
 };
 
 
@@ -111,6 +112,14 @@ int main()
     timerText.setOutlineColor(sf::Color::Black);
     timerText.setPosition(window.getSize().x / 400.0f,  10.0f);
 
+    sf::Text ScoreText;
+    ScoreText.setFont(gameFont);
+    ScoreText.setString("Score:0 ");
+    ScoreText.setFillColor(sf::Color::Magenta);
+    ScoreText.setOutlineThickness(2.0f);
+    ScoreText.setOutlineColor(sf::Color::Black);
+    ScoreText.setPosition(100.0f, 10.0f);
+
     sf::Text GameOver;
     GameOver.setFont(gameFont);
     GameOver.setString("Game Over");
@@ -152,9 +161,10 @@ int main()
     sf::Clock overallTimeClock;
     sf::Clock gameTimer;
     sf::Clock stickSpawn;
+    int score = 0;
     float stickCooldown = 1;
-    float gameDuration = 5;
-    bool GameRunning = true;
+    float gameDuration = 30;
+    GameState currentState = GameState::RUNNING;
 
 #pragma endregion
 
@@ -195,12 +205,13 @@ int main()
         if (remianingTimeFloat <= 0)
         {
             remianingTimeFloat = 0;
-            GameRunning = false;
+            //GameRunning = false;
+            currentState = GameState::GAME_OVER;
         }
 
         direction.x = 0;
         direction.y = 0;
-        if (GameRunning == true)
+        if (currentState == GameState::RUNNING)
         {
             if (sf::Joystick::isConnected(1))
             {
@@ -271,19 +282,31 @@ int main()
                 StickSprites.push_back(StickSprite);
             }
 
+            sf::FloatRect playerbounds = playerSprite.getLocalBounds();
 
+            for (int i = StickSprites.size() - 1; i >= 0; --i)
+            {
+                sf::FloatRect stickbounds = StickSprites[i].getLocalBounds();
+                if (playerbounds.intersects(stickbounds))
+                {
+                    std::string ScoreString = "Score: ";
+                    ScoreString += std::to_string(score);
+                    ScoreText.setString(ScoreString);
+                    StickSprites.erase(StickSprites.begin() + i);
+                }
+            }
 
 
         }
 
-        if (!GameRunning)
+        if (currentState == GameState::GAME_OVER)
         {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
             {
                 StickSprites.clear();
                 gameTimer.restart();
                 playerSprite.setPosition(sf::Vector2f(100.0f, 100.0f));
-                GameRunning = true;
+                currentState = GameState::RUNNING;
             }
         }
     
@@ -304,7 +327,7 @@ int main()
         window.draw(playerSprite);
         window.draw(gameTitle);
         window.draw(timerText);
-        if (GameRunning == false)
+        if (currentState == GameState::GAME_OVER)
         {
             window.draw(GameOver);
             window.draw(restart);
