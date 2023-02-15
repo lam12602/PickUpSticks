@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include<cmath>
+#include "AniClass.h"
 
 enum class GameState
 {
@@ -24,10 +25,30 @@ int main()
 
     
 
-    sf::Texture playerTexture;
+    sf::Texture playerTextureStand;
     sf::Texture grassTexture;
     sf::Texture stickTexture;
-    if (!playerTexture.loadFromFile("Assets/Player_Stand.png"))
+    sf::Texture playerTextureWalk1;
+    sf::Texture playerTextureWalk2;
+    if (!playerTextureStand.loadFromFile("Assets/Player_Stand.png"))
+    {
+        //error
+        std::cout << "load texture failed" << std::endl;
+    }
+    else
+    {
+        std::cout << "texture loaded" << std::endl;
+    }
+    if (!playerTextureWalk1.loadFromFile("Assets/Player_Walk_1.png"))
+    {
+        //error
+        std::cout << "load texture failed" << std::endl;
+    }
+    else
+    {
+        std::cout << "texture loaded" << std::endl;
+    }
+    if (!playerTextureWalk2.loadFromFile("Assets/Player_Walk_2.png"))
     {
         //error
         std::cout << "load texture failed" << std::endl;
@@ -48,8 +69,31 @@ int main()
         std::cout << "load texture failed" << std::endl;
     }
 
+    std::vector<sf::Texture> playerWalk;
+    int numFrames = 2;
+    std::string baseFilePath = "Assets/Player_Walk_";
+    std::string fileType = ".png";
+    for (int i  = 0; i < numFrames; ++i)
+    {
+        playerWalk.push_back(sf::Texture());
+        playerWalk[i].loadFromFile(baseFilePath + std::to_string(i + 1) + fileType);
+    }
+    
+
+    std::vector<sf::Texture> playerStand;
+    playerStand.push_back(sf::Texture());
+    playerStand[0].loadFromFile("Assets/Player_Stand.png");
+
+    std::vector<sf::Texture>* currentClip = &playerStand;
+
+
+    float framesPerSecond = 12.0f;
+    sf::Time timePerFrame = sf::seconds(1.0f / framesPerSecond);
+    sf::Clock animationClock;
+    int currentFrame = 0;
+
     sf::Sprite playerSprite;
-    playerSprite.setTexture(playerTexture);
+    playerSprite.setTexture(playerTextureStand);
 
 
 
@@ -81,7 +125,7 @@ int main()
     playerSprite.setColor(sf::Color::Cyan);
     //playerSprite.setRotation(90);
     //playerSprite.setScale(3.0f, 3.0f);
-    playerSprite.setOrigin(playerTexture.getSize().x / 2, playerTexture.getSize().y / 2);
+    playerSprite.setOrigin(playerTextureStand.getSize().x / 2, playerTextureStand.getSize().y / 2);
     
     //load fonts
     sf::Font gameFont;
@@ -229,20 +273,32 @@ int main()
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             {
                 direction.x = -1;
+                
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             {
                 direction.x = 1;
+                
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
             {
                 direction.y = -1;
+               
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
                 direction.y = 1;
+                
             }
 
+            if (direction.x != 0 || direction.y != 0)
+            {
+                currentClip = &playerWalk;
+            }
+            else
+            {
+                currentClip = &playerStand;
+            }
 
 
 
@@ -295,7 +351,24 @@ int main()
                     StickSprites.erase(StickSprites.begin() + i);
                 }
             }
+            sf::Time timepassedThisFrame = animationClock.getElapsedTime();
 
+            if (timepassedThisFrame >= timePerFrame)
+            {
+                animationClock.restart();
+                
+
+                ++currentFrame;
+                if (currentFrame >= currentClip->size())
+                {
+                    currentFrame = 0;
+                }
+
+                playerSprite.setTexture((*currentClip)[currentFrame]);
+
+            }
+
+            
 
         }
 
